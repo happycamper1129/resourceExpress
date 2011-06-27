@@ -13,17 +13,8 @@
 var express = require('express')
   , join = require('path').join
   , lingo = require('lingo')
-  , en = lingo.en
-  , orderedActions = [
-    'index'   //  GET  /
-    ,'new'    //  GET  /new
-    ,'create' //  POST /
-    ,'show'   //  GET  /:id
-    ,'edit'   //  GET  /edit/:id
-    ,'update' //  PUT  /:id
-    ,'destroy'//  DEL  /:id
-  ];
-  
+  , en = lingo.en;
+
 /**
  * Initialize a new `Resource` with the given `name` and `actions`.
  *
@@ -45,10 +36,8 @@ var Resource = module.exports = function Resource(name, actions, app) {
   this.param = ':' + this.id;
 
   // default actions
-  for(var i=0, key; i < orderedActions.length; i++) {
-    key = orderedActions[i];
-    if(actions[key])
-      this.mapDefaultAction(key, actions[key]);
+  for (var key in actions) {
+    this.mapDefaultAction(key, actions[key]);
   }
 
   // auto-loader
@@ -69,14 +58,21 @@ Resource.prototype.load = function(fn){
 
   this.loadFunction = fn;
   this.app.param(this.id, function(req, res, next){
-    fn(req.params[id], function(err, obj){
+    var callback = function(err, obj){
       if (err) return next(err);
       // TODO: ideally we should next() passed the
       // route handler
       if (null == obj) return res.send(404);
       req[id] = obj;
       next();
-    });
+    };
+    
+    // Maintain backward compatibility
+    if (fn.length === 2) {
+      fn(req.params[id], callback);
+    } else {
+      fn(req, req.params[id], callback);
+    }
   });
 
   return this;
