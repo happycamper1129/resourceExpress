@@ -23,10 +23,6 @@ exports.update = function(req, res){
   res.send('update forum ' + req.params.forum);
 };
 
-exports.patch = function(req, res){
-  res.send('patch forum ' + req.params.forum);
-};
-
 exports.destroy = function(req, res){
   res.send('destroy forum ' + req.params.forum);
 };
